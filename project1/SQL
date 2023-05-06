@@ -1,0 +1,224 @@
+CREATE TABLE customer (
+	id int,
+	name text,
+	city text,
+	email text,
+	birth_date date,
+	avg_spending real
+);
+
+INSERT INTO customer VALUES
+	(1, "toy", "BKK", "toy@email.com", 500.25),
+	(2, "joe", "Bkk", "joe@email.com",125.50)
+	(4, "ken", "LON", "ann@email.com", 999.55);
+  
+  -- * = All column (avoid using this)
+SELECT * FROM customer;
+
+-- AS use to rename column type the name after spacing also rename
+SELECT
+	FirstName AS fname,
+	Country,
+	Email
+FROM customers;
+
+-- AS use to rename column type the name after spacing also rename
+SELECT
+	FirstName AS fname,
+	Country,
+	Email
+FROM customers;
+
+SELECT
+	name,
+	milliseconds/60000.0 AS sec,
+  round(bytes/(1024*1024.0), 4) AS Mgb
+FROM tracks
+LIMIT 10;
+
+SELECT
+	firstname,
+	country,
+	email
+FROM customers
+WHERE country = 'usa'
+	AND firstname = 'Marc'
+	AND email LIKE '%@yahoo%'
+  AND country IN ('USA', 'Italy');
+ 
+ SELECT
+	Firstname,
+	country,
+	email
+From customers
+WHERE customerid BETWEEN 1 AND 5;
+
+SELECT strftime('%Y-%m',InvoiceDate) FROM invoices; --extract time (year-month)
+
+SELECT 
+	strftime('%Y',InvoiceDate) AS year, --'%Y' extract year
+	strftime('%m',InvoiceDate) AS month, --'%m' extract month
+    strftime('%d',InvoiceDate) AS day --'%d' extract day
+FROM invoices;
+
+SELECT 
+	strftime('%Y-%m',InvoiceDate) AS year,
+	strftime('%m',InvoiceDate) AS month,
+    strftime('%d',InvoiceDate) AS day
+FROM invoices
+WHERE year = '2009-01'; -- filter day
+
+SELECT 
+	CAST(strftime('%Y%m',InvoiceDate) AS INT) AS year, -- CAST to tranform into Data type
+	strftime('%m',InvoiceDate) AS month,
+    strftime('%d',InvoiceDate) AS day
+FROM invoices
+WHERE year = 200901;
+
+--subquery
+SELECT firstname, lastname
+FROM (SELECT * FROM customers WHERE country = 'USA');
+
+--join
+SELECT * FROM artists
+JOIN albums ON artists.artistid = albums.artistid
+JOIN tracks ON albums.albumid = tracks.albumid;
+
+--join
+SELECT * FROM artists AS Art
+JOIN albums AS Alb ON Art.artistid = Alb.artistid
+JOIN tracks AS Tra ON Alb.albumid = Tra.albumid
+WHERE Alb.title LIKE 'The %' AND Tra.composer LIKE 'M%';
+
+-- Aggregrate Function
+SELECT 
+		COUNT(*) AS count_all,
+    AVG(Tra.bytes) AS Avg_bytes,
+    SUM(Tra.bytes) AS Sum_bytes,
+    Min(Tra.Bytes) AS Min_bytes,
+    Max(Tra.bytes) AS Max_bytes
+FROM artists AS Art
+JOIN albums AS Alb ON Art.artistid = Alb.artistid
+JOIN tracks AS Tra ON Alb.albumid = Tra.albumid
+JOIN genres AS Gen ON Tra.genreid = Gen.genreid;
+
+--Group by
+SELECT
+	Gen.Name, -- อะไรใน group by ต้องใส่ใน select ด้่วย
+	COUNT(*),
+    AVG(Tra.bytes) AS Avg_bytes,
+    SUM(Tra.bytes) AS Sum_bytes,
+    Min(Tra.Bytes) AS Min_bytes,
+    Max(Tra.bytes) AS Max_bytes
+FROM artists AS Art
+JOIN albums AS Alb ON Art.artistid = Alb.artistid
+LEFT JOIN tracks AS Tra ON Alb.albumid = Tra.albumid
+JOIN genres AS Gen ON Tra.genreid = Gen.genreid
+WHERE Alb.title NOT LIKE 'Sc%' -- Filter Table
+GROUP BY Gen.name
+HAVING Gen.name LIKE 'S%' -- Filter Group
+ORDER BY Amount_of_tracks;
+
+-- WITH and Subquery
+-- sub = SELECT * FROM ...
+
+WITH sub AS (
+  SELECT
+	Art.name AS artist,
+  	Alb.Title,
+  	Tra.name AS track,
+  	Tra.bytes,
+  	Gen.name AS genre
+FROM artists AS Art
+JOIN albums AS Alb ON Art.artistid = Alb.artistid
+JOIN tracks AS Tra ON Alb.albumid = Tra.albumid
+JOIN genres AS Gen ON Tra.genreid = Gen.genreid
+  )
+SELECT track, bytes, genre FROM sub
+WHERE genre = 'Rock' AND artist LIKE 'S%';
+
+-- WITH and Subquery
+-- sub = SELECT * FROM ...
+
+WITH sub AS (
+  SELECT
+	Art.name AS artist,
+  	Alb.Title,
+  	Tra.name AS track,
+  	Tra.bytes,
+  	Gen.name AS genre
+FROM artists AS Art
+JOIN albums AS Alb ON Art.artistid = Alb.artistid
+JOIN tracks AS Tra ON Alb.albumid = Tra.albumid
+JOIN genres AS Gen ON Tra.genreid = Gen.genreid
+  )
+SELECT track, bytes, genre FROM sub
+WHERE genre = 'Rock' AND artist LIKE 'S%';
+
+-- WITH and Subquery
+-- sub = SELECT * FROM ...
+
+WITH sub AS (
+  SELECT
+	Art.name AS artist,
+  	Alb.Title,
+  	Tra.name AS track,
+  	Tra.bytes,
+  	Gen.name AS genre
+FROM artists AS Art
+JOIN albums AS Alb ON Art.artistid = Alb.artistid
+JOIN tracks AS Tra ON Alb.albumid = Tra.albumid
+JOIN genres AS Gen ON Tra.genreid = Gen.genreid
+  )
+SELECT track, bytes, genre FROM sub
+WHERE genre = 'Rock' AND artist LIKE 'S%';
+
+SELECT
+	ROW_NUMBER() OVER(PARTITION BY COUNTRY ORDER BY firstname) AS rowNum, -- window function (OVER)
+	firstname,
+	country
+FROM customers;
+
+-- Window function NTILE()
+
+SELECT segment, COUNT(*) FROM(
+SELECT 
+	name AS songname,
+    milliseconds,
+    NTILE(5) OVER(ORDER BY milliseconds) AS segment --NTILE() แบ่ง segment เป็น 5 OVER() <- ต้องมี ORDER BY ด้วย
+FROM tracks
+)
+GROUP BY segment;
+
+-- Window function NTILE()
+
+SELECT 
+	*,
+    CASE WHEN segment IN (1) THEN 'Very_Low'
+    	 WHEN segment IN (2) THEN 'Low'
+    	 WHEN segment IN (4) THEN 'High'
+         WHEN segment IN (5) THEN 'Very_High'
+    ELSE 'Medium'
+    END label_segment
+FROM (
+	SELECT segment, COUNT(*) FROM(
+		SELECT 
+			name AS songname,
+   			milliseconds,
+    		NTILE(5) OVER(ORDER BY milliseconds) AS segment
+		FROM tracks
+)
+	GROUP BY segment
+);
+
+-- CASE WHEN THEN ELSE END
+SELECT
+	firstname,
+    country,
+    CASE
+    	WHEN country IN ('USA', 'Canada') THEN 'America'
+        WHEN country IN ('Belgium', 'Italy', 'France') THEN 'EU'
+        ELSE 'Other regions'
+    END AS region
+FROM customers;
+
