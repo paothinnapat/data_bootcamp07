@@ -1,0 +1,136 @@
+## library tidyverse
+library(tidyverse)
+
+## basic plots (base R no need library)
+
+hist(mtcars$mpg)
+
+## analyzing horse power
+## Histogram - One Quantitative Varaible
+
+hist(mtcars$hp)
+mean(mtcars$hp)
+median(mtcars$hp)
+
+str(mtcars) # observe data
+mtcars$am <- factor(mtcars$am,          # change from numeric to factor
+                    levels = c(0,1),
+                    labels = c("Auto", "Manual"))
+
+## bar plot - One Qualitative Variable
+barplot(table(mtcars$am))
+
+## box plot
+boxplot(mtcars$hp)
+fivenum(mtcars$hp)
+
+min(mtcars$hp)
+quantile(mtcars$hp, probs = c(.25, .5, .75))
+max(mtcars$hp)
+
+## whisker calculation
+Q3 <- quantile(mtcars$hp, probs = .75)
+Q1 <- quantile(mtcars$hp, probs = .25)
+IQR_hp <- Q3 - Q1
+
+Q3 + 1.5*IQR_hp
+Q1 - 1.5*IQR_hp
+
+boxplot.stats(mtcars$hp, coef = 1.5)
+
+## filter out outliers
+mtcars_no_out <- mtcars %>%
+  filter(hp < 335)
+
+boxplot(mtcars_no_out$hp)
+
+## Boxplot 2 variables
+## Qualitative x Quantitative
+
+
+data(mtcars)
+mtcars$am <- factor(mtcars$am,
+                    levels = c(0,1),
+                    labels = c("Auto","Manual"))
+boxplot(mpg ~ am, data = mtcars,
+        col = c("blue", "salmon"))
+        
+## scatter plot
+## 2 x Quantitative
+plot(mtcars$hp, mtcars$mpg, pch = 16, 
+     col = "salmon",
+     main = "Reelationship between HP and MPG",
+     xlab = "Horse Power",
+     ylab = "Miles Per Gallon") # pch change icon of point / col is color
+
+
+cor(mtcars$hp, mtcars$mpg)
+lm(mpg ~ hp, data = mtcars)
+
+## ggplot2
+## library tidyverse
+
+library(tidyverse)
+
+## first plot
+ggplot(data = mtcars, mapping = aes(x = hp, y = mpg)) +
+  geom_point() 
+
+ggplot(data = mtcars, mapping = aes(x = hp, y = mpg)) +
+  geom_point() +  # to add what chart look like
+  geom_smooth() +
+  geom_rug()
+
+ggplot(mtcars, aes(hp, mpg)) + # no need a long typing
+  geom_point(size = 2, col = "salmon", alpha = 0.7) # to customize point size, color and opacity
+
+ggplot(mtcars, aes(hp)) +
+  geom_histogram(bins = 10, fill = "salmon", alpha = 0.5)
+
+ggplot(mtcars, aes(hp)) +
+  geom_boxplot()
+
+p <- ggplot(mtcars, aes(hp))
+p + geom_histogram(bins = 10)
+p + geom_density()
+p + geom_boxplot()
+
+## box plot by groups
+diamonds %>%
+  count(cut)
+
+ggplot(diamonds, aes(cut)) +
+  geom_bar(fill = "lightblue") # to fill color
+
+
+ggplot(diamonds, mapping = aes(cut, fill=color)) + # to fill color seaparate by any cut
+  geom_bar(position = "fill") # stack, dodge, fill
+  
+  
+## scatter plot
+
+set.seed(42)
+small_diamond <- sample_n(diamonds, 5000) # to get random sample
+
+ggplot(small_diamond,aes(carat, price)) +
+  geom_point(size = 1)
+  
+
+## FACET : small multiple
+ggplot(small_diamond, aes(carat, price)) +
+  geom_point(size = 1) +
+  geom_smooth(method = "lm") +
+  facet_wrap(~color, ncol = 2) +
+  theme_minimal() + # clean theme
+  labs(title = "Relationship between carat and price by color",
+       x = "Carat",
+       y = "Price USD",
+       caption = "Source: Diamonds from ggplot2 package")
+       
+## Final Ex
+ggplot(small_diamond, aes(carat, price, col=cut)) +
+  geom_point(size = 1, alpha = 0.3) +
+  facet_wrap(~ color, ncol=2) +
+  theme_minimal()
+  
+  
