@@ -1,4 +1,4 @@
-## Corrrlation
+## Corrrelation
 cor(mtcars$hp, mtcars$mpg)
 cor(mtcars$wt, mtcars$mpg)
 
